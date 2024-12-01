@@ -16,6 +16,6 @@ import com.example.atquiz.ui.theme.ATQuizTheme
 
 // https://developer.android.com/develop/ui/compose/tooling/relay/vector-graphics?hl=de
 @Composable
-fun ClickableMapUnit(unitName : String, onClickUnit : (String) -> Unit) {
+fun ClickableMapUnit(unitName : String, svgResourceId : Int ,onClickUnit : (String) -> Unit) {
 
 }
