@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -64,39 +65,7 @@ fun CardQuiz() {
     Text("Card")
 }
 
-@Composable
-fun MultipleChoiceQuiz(){
-    val questionList = sampleQuestions;
 
-    LazyColumn(modifier = Modifier.fillMaxHeight()) {
-        items(questionList, itemContent = { item ->
-            QuestionDetail(item)
-        })
-    }
-}
-
-
-@Composable
-fun QuestionDetail(questonObject: QuestionObject){
-    val answers = questonObject.answerList
-
-    Column {
-        Text(questonObject.question)
-        Spacer(modifier = Modifier.height(8.dp))
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.height(200.dp)
-        ) {
-            items(answers) { answer ->
-                Button(onClick = {
-                    questonObject.checkAnswer(answer)
-                }) {
-                    Text(answer)
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun AppNavigation() {
