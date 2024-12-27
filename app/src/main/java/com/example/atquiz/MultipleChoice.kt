@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,8 +21,22 @@ import kotlin.random.Random
 @Composable
 fun QuestionFilter(questionList: List<QuestionObject>
                ,updateQuestionObject: (QuestionObject) -> Unit) {
+    val isDropDownExpanded = remember {
+        mutableStateOf(false)
+    }
+    val itemPosition = remember {
+        mutableStateOf(0)
+    }
+
+
 
     Column {
+        DropdownMenu(expanded = isDropDownExpanded.value, onDismissRequest = {
+            isDropDownExpanded.value = false
+
+        }) {
+            questionList.forEach()
+        }
         Button(onClick = {
             val randomIndex = Random.nextInt(0, questionList.size - 1 )
             updateQuestionObject(questionList[randomIndex])
@@ -64,7 +79,6 @@ fun MultipleChoiceQuiz(){
         QuestionFilter(questionList){
             questionObject = it
         }
-        Spacer(modifier = Modifier.height(2.dp))
         QuestionDetail(questionObject)
     }
 
