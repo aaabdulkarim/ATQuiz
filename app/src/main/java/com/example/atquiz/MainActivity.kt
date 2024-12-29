@@ -1,23 +1,13 @@
 package com.example.atquiz
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,12 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.atquiz.composables.MultipleChoiceQuiz
 import com.example.atquiz.ui.theme.ATQuizTheme
 
 class MainActivity : ComponentActivity() {
@@ -106,7 +96,6 @@ fun AppNavigation(navController : NavHostController) {
             }
         }
 
-        Spacer(Modifier.height(2.dp))
 
 
     }
@@ -117,7 +106,10 @@ fun AppNavigation(navController : NavHostController) {
 fun AppNavigationBar(navController : NavController) {
     var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf("Karte", "Quiz", "Stat")
-    val iconList = listOf(R.drawable.ic_map)
+    // https://www.reshot.com/free-svg-icons/item/speech-bubble-question-CHEP4RX57W/
+    // https://www.reshot.com/free-svg-icons/item/map-W4DUJ39HXV/
+    // https://www.flaticon.com/free-icon/diagram_9637699?term=stats&page=1&position=67&origin=tag&related_id=9637699
+    val iconList = listOf(R.drawable.ic_map, R.drawable.ic_quiz, R.drawable.ic_stats)
 
     NavigationBar {
         items.forEachIndexed { index, item ->
@@ -125,7 +117,7 @@ fun AppNavigationBar(navController : NavController) {
                 icon= {
                     Icon(
                         painter = painterResource(id = iconList[index]),
-                        contentDescription = "Local SVG"
+                        contentDescription = "Local Icon"
                     )
                 },
                 label = { Text(item) },
