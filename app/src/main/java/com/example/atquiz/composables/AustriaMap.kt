@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.atquiz.StateShape
+//import com.example.atquiz.StateShape
 
 @Composable
 fun AustriaMap(path: String, name: String) {
@@ -24,7 +24,8 @@ fun AustriaMap(path: String, name: String) {
         Button(
             modifier = Modifier
                 .size(800.dp)
-                .clip(StateShape(path)),
+//                .clip(StateShape(path)),
+                    ,
             onClick = { Log.d(name, name) },
             shape = RoundedCornerShape(0.dp),
             border = BorderStroke(1.dp, Color.Red)
