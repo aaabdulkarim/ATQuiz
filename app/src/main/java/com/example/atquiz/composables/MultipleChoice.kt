@@ -1,10 +1,12 @@
 package com.example.atquiz.composables
 
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 
 
@@ -31,106 +32,162 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.atquiz.ui.theme.background
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
 import com.example.atquiz.ui.theme.text
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun QuestionFilter(questionList: List<QuestionObject>
-               ,updateQuestionObject: (QuestionObject) -> Unit) {
+fun QuestionFilter(
+    questionList: List<QuestionObject>,
+    onShowDetails: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    updateQuestionObject: (QuestionObject) -> Unit,
 
+) {
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        itemsIndexed(questionList) { index, question ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = secondary,
-                    contentColor = text
+    // das "with" bedeutet man benutzt die Daten und Funktionen eines Objekts
+    // ohne auf sie zu referenzieren, wie im Beispiel beim .sharedElementModifier
+    with(sharedTransitionScope) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .sharedElement(
+                    rememberSharedContentState(key = "image"),
+                    animatedVisibilityScope = animatedVisibilityScope
                 ),
-                onClick = {
-                    updateQuestionObject(questionList[index])
-                }
-            ) {
-                Row(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            itemsIndexed(questionList) { index, question ->
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = secondary,
+                        contentColor = text
+                    ),
+                    onClick = {
+                        updateQuestionObject(questionList[index])
+                        onShowDetails()
+                    }
                 ) {
-                    Text(
-                        text = question.question,
-                        color = text,
-                        modifier = Modifier.weight(1f)
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = question.question,
+                            color = text,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
     }
-
 }
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun QuestionDetail(questonObject: QuestionObject){
-    val answers = questonObject.answerList
+fun QuestionDetail(
+    onBack: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    questionObject: QuestionObject,
+){
+    val answers = questionObject.answerList
     val context = LocalContext.current
 
+    // das "with" bedeutet man benutzt die Daten und Funktionen eines Objekts
+    // ohne auf sie zu referenzieren, wie im Beispiel beim .sharedElement-Modifier
+    with(sharedTransitionScope) {
 
-    Column(
-        modifier = Modifier
-            .height(200.dp)
-            .padding(2.dp)
-    ) {
-        Text(text = questonObject.question)
-        answers.forEach { answer ->
-            Button(
-                onClick = {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .sharedElement(
+                    rememberSharedContentState(key = "image"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
 
-                    val toastString =
-                        if (questonObject.checkAnswer(answer)) "Richtig!" else "Falsch"
-                    Toast.makeText(context, toastString, Toast.LENGTH_SHORT).show()
-                },
+        ) {
+            Text(text = questionObject.question)
+            answers.forEach { answer ->
+                Button(
+                    onClick = {
 
-                colors = ButtonDefaults.buttonColors(
-                    contentColor = text,
-                    containerColor = primary
-                ),
-                shape = RoundedCornerShape(20), // = 20%
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(answer)
+                        val toastString =
+                            if (questionObject.checkAnswer(answer)) "Richtig!" else "Falsch"
+                        Toast.makeText(context, toastString, Toast.LENGTH_SHORT).show()
+                    },
+
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = text,
+                        containerColor = primary
+                    ),
+                    shape = RoundedCornerShape(20),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(answer)
+                }
+            }
+            Button(onClick = { onBack() }) {
+                Text(text = "Zurück")
             }
         }
     }
 }
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MultipleChoiceQuiz(){
     // Possible API: https://opentdb.com/api_config.php
-    // Possible Dataset: https://github.c om/uberspot/OpenTriviaQA/
+    // Possible Dataset: https://github.com/uberspot/OpenTriviaQA/
     val questionList = sampleQuestions;
     var questionObject by remember{ mutableStateOf(questionList[0]) }
 
-    Column {
-        QuestionDetail(questionObject)
+    // Für Shared Element Transition
+    var showDetails by remember {
+        mutableStateOf(false)
+    }
 
-        QuestionFilter(questionList){
-            questionObject = it
+    SharedTransitionLayout {
+        AnimatedContent(
+            showDetails,
+            label = "basic_transition"
+        ) { targetState ->
+            if (!targetState) {
+                QuestionFilter(
+
+                    onShowDetails = {
+                        showDetails = true
+                    },
+                    animatedVisibilityScope = this@AnimatedContent,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    questionList = questionList,
+                ){
+                    questionObject = it
+                }
+            } else {
+                QuestionDetail(
+                    onBack = {
+                        showDetails = false
+                    },
+                    animatedVisibilityScope = this@AnimatedContent,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    questionObject = questionObject
+                )
+            }
         }
     }
 
