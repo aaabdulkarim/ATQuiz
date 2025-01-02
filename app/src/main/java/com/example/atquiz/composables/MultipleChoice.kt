@@ -25,6 +25,7 @@ import androidx.compose.material3.CardDefaults
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
 import com.example.atquiz.ui.theme.text
@@ -62,7 +64,7 @@ fun QuestionFilter(
                 ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            itemsIndexed(questionList) { index, question ->
+            itemsIndexed(questionList) { index, questionObject ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -84,9 +86,14 @@ fun QuestionFilter(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = question.question,
+                            text = questionObject.question,
                             color = text,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .sharedElement(
+                                    rememberSharedContentState(key = questionObject.question),
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
                         )
                     }
                 }
@@ -114,13 +121,19 @@ fun QuestionDetail(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .sharedElement(
-                    rememberSharedContentState(key = "image"),
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
+                .padding(2.dp)
+
 
         ) {
-            Text(text = questionObject.question)
+            Text(
+                text = questionObject.question,
+                fontSize = 16.sp,
+                modifier = Modifier
+                    .sharedElement(
+                        rememberSharedContentState(key = questionObject.question),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+            )
             answers.forEach { answer ->
                 Button(
                     onClick = {
@@ -140,7 +153,7 @@ fun QuestionDetail(
                     Text(answer)
                 }
             }
-            Button(onClick = { onBack() }) {
+            TextButton(onClick = { onBack() }) {
                 Text(text = "Zurück")
             }
         }
