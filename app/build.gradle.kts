@@ -49,7 +49,14 @@ android {
     }
 }
 
+//val vicoVersion = "2.0.0-beta.6"
+
 dependencies {
+//    // Vico Dependencies
+//    implementation("com.patrykandpatrick.vico:compose:$vicoVersion")
+//    implementation("com.patrykandpatrick.vico:compose-m3:$vicoVersion")
+//    implementation("com.patrykandpatrick.vico:views:$vicoVersion")
+
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
