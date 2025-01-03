@@ -68,7 +68,11 @@ fun QuestionFilter(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(8.dp)
+                        .sharedElement(
+                            rememberSharedContentState(key = questionObject.question),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        ),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = secondary,
@@ -90,10 +94,6 @@ fun QuestionFilter(
                             color = text,
                             modifier = Modifier
                                 .weight(1f)
-                                .sharedElement(
-                                    rememberSharedContentState(key = questionObject.question),
-                                    animatedVisibilityScope = animatedVisibilityScope
-                                )
                         )
                     }
                 }
@@ -123,17 +123,38 @@ fun QuestionDetail(
                 .fillMaxSize()
                 .padding(2.dp)
 
-
         ) {
-            Text(
-                text = questionObject.question,
-                fontSize = 16.sp,
+            // Frage
+            Card(
                 modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
                     .sharedElement(
                         rememberSharedContentState(key = questionObject.question),
                         animatedVisibilityScope = animatedVisibilityScope
+                    ),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = secondary,
+                    contentColor = text
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = questionObject.question,
+                        color = text,
+                        modifier = Modifier
+                            .weight(1f)
                     )
-            )
+                }
+            }
+
+            // Antwortmöglichkeiten
             answers.forEach { answer ->
                 Button(
                     onClick = {
