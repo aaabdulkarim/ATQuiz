@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+
 android {
     namespace = "com.example.atquiz"
     compileSdk = 34
@@ -42,6 +43,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -49,13 +51,8 @@ android {
     }
 }
 
-//val vicoVersion = "2.0.0-beta.6"
-
 dependencies {
-//    // Vico Dependencies
-//    implementation("com.patrykandpatrick.vico:compose:$vicoVersion")
-//    implementation("com.patrykandpatrick.vico:compose-m3:$vicoVersion")
-//    implementation("com.patrykandpatrick.vico:views:$vicoVersion")
+    implementation ("com.github.ehsannarmani:ComposeCharts:0.0.4")
 
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.core:core-ktx:1.9.0")

@@ -31,6 +31,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.atquiz.composables.MultipleChoiceQuiz
+import com.example.atquiz.composables.Statistics
 import com.example.atquiz.ui.theme.ATQuizTheme
 
 class MainActivity : ComponentActivity() {
@@ -65,10 +66,6 @@ class MainActivity : ComponentActivity() {
 }
 
 
-@Composable
-fun Statistik(){
-    Text("Du hast 0 Punkte")
-}
 
 @Composable
 fun CardQuiz() {
@@ -84,7 +81,7 @@ fun AppNavigation(navController : NavHostController) {
     Column {
         NavHost(navController, startDestination = "karte"){
             composable("stat") {
-                Statistik()
+                Statistics()
             }
 
             composable("karte"){
