@@ -1,4 +1,4 @@
-package com.example.atquiz
+package com.example.atquiz.composables
 
 import android.util.Log
 import androidx.compose.foundation.Canvas
@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.atquiz.R
 
 class StateShape(private val svgPath: String) : androidx.compose.ui.graphics.Shape {
     override fun createOutline(
@@ -21,17 +22,5 @@ class StateShape(private val svgPath: String) : androidx.compose.ui.graphics.Sha
     ): Outline {
         val path = PathParser().parsePathString(svgPath).toPath()
         return Outline.Generic(path)
-    }
-}
-
-
-@Composable
-fun SvgCanvas() {
-    val svgPath = stringResource(id = R.string.lower_austria)
-    Canvas(
-        modifier = Modifier.size(200.dp).clickable { Log.e("NIEDERÖSTERREICH", "NIEDERÖSTERREICH") }
-    ) {
-        val path = PathParser().parsePathString(svgPath).toPath()
-        drawPath(path = path, color = Color.Red)
     }
 }
