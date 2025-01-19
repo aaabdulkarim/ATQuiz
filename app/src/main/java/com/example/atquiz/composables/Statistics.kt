@@ -19,13 +19,29 @@ import ir.ehsannarmani.compose_charts.models.DrawStyle
 import ir.ehsannarmani.compose_charts.models.Line
 
 
+// Diese Data Class sollten die Daten der Statistiken bestmöglichst halten
+//
+data class StatisticData(
+    val geographyQuizResults : List<Int>,
+    val historyQuizResults : List<Int>,
+    val cultureQuizResults : List<Int>,
+    val vocabularyQuizResults : List<Int>,
+    val viennaQuizResults : List<Int>,
+    val cardGameResults : List<Int>,
+
+    )
+
+
+
 // Chart Benutzen: https://github.com/ehsannarmani/ComposeCharts/tree/0.0.4?tab=readme-ov-file#gradle-setup
 
 @Composable
-fun Statistics() {
+fun Statistics(statisticObject : StatisticData) {
 
     LineChart(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 22.dp),
         data = remember {
             listOf(
                 Line(
