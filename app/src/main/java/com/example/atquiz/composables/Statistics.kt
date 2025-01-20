@@ -36,7 +36,7 @@ data class StatisticData(
 // Chart Benutzen: https://github.com/ehsannarmani/ComposeCharts/tree/0.0.4?tab=readme-ov-file#gradle-setup
 
 @Composable
-fun Statistics(statisticObject : StatisticData) {
+fun Statistics() {
 
     LineChart(
         modifier = Modifier
