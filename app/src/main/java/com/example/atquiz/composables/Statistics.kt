@@ -1,64 +1,85 @@
 package com.example.atquiz.composables
 
-import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
-import ir.ehsannarmani.compose_charts.LineChart
-import ir.ehsannarmani.compose_charts.models.AnimationMode
-import ir.ehsannarmani.compose_charts.models.DrawStyle
-import ir.ehsannarmani.compose_charts.models.Line
+import ir.ehsannarmani.compose_charts.ColumnChart
+import ir.ehsannarmani.compose_charts.models.BarProperties
+import ir.ehsannarmani.compose_charts.models.Bars
 
 
 // Diese Data Class sollten die Daten der Statistiken bestmöglichst halten
 //
-data class StatisticData(
-    val geographyQuizResults : List<Int>,
-    val historyQuizResults : List<Int>,
-    val cultureQuizResults : List<Int>,
-    val vocabularyQuizResults : List<Int>,
-    val viennaQuizResults : List<Int>,
-    val cardGameResults : List<Int>,
-
-    )
-
+data class StatUnit(
+    val statLabel : String,
+    val amountQuestion : Int,
+    val amountCorrect : Int
+)
 
 
 // Chart Benutzen: https://github.com/ehsannarmani/ComposeCharts/tree/0.0.4?tab=readme-ov-file#gradle-setup
 
 @Composable
-fun Statistics() {
+fun Statistics(statisticList : List<StatUnit>) {
 
-    LineChart(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 22.dp),
-        data = remember {
-            listOf(
-                Line(
-                    label = "Windows",
-                    values = listOf(28.0, 41.0, 5.0, 10.0, 35.0),
-                    color = SolidColor(Color(0xFF23af92)),
-                    firstGradientFillColor = Color(0xFF2BC0A1).copy(alpha = .5f),
-                    secondGradientFillColor = Color.Transparent,
-                    strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
-                    gradientAnimationDelay = 1000,
-                    drawStyle = DrawStyle.Stroke(width = 2.dp),
-                )
+    val dataList = statisticList.map {
+        Bars (
+            label = it.statLabel,
+            values = listOf(
+                Bars.Data(label = "Insgesamt", value = it.amountQuestion.toDouble(), color = SolidColor(Color.Red)),
+                Bars.Data(label = "Korrekt", value = it.amountQuestion.toDouble(), color = SolidColor(Color.Green)),
             )
-        },
-        animationMode = AnimationMode.Together(delayBuilder = {
-            it * 500L
-        }),
-    )
+        )
+    }
 
+    ColumnChart(
+        modifier= Modifier.fillMaxSize().padding(horizontal = 22.dp),
+        data = dataList,
+
+        barProperties = BarProperties(
+            cornerRadius = Bars.Data.Radius.Rectangle(topRight = 6.dp, topLeft = 6.dp),
+            spacing = 3.dp,
+            thickness  = 20.dp
+        ),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+    )
 }
+
+
+val sampleStatUnitList = listOf(
+    StatUnit(
+        statLabel = "Quiz 1",
+        amountQuestion = 10,
+        amountCorrect = 7
+    ),
+    StatUnit(
+        statLabel = "Quiz 2",
+        amountQuestion = 15,
+        amountCorrect = 12
+    ),
+    StatUnit(
+        statLabel = "Quiz 3",
+        amountQuestion = 8,
+        amountCorrect = 5
+    ),
+    StatUnit(
+        statLabel = "Quiz 4",
+        amountQuestion = 20,
+        amountCorrect = 18
+    ),
+    StatUnit(
+        statLabel = "Quiz 5",
+        amountQuestion = 25,
+        amountCorrect = 23
+    )
+)

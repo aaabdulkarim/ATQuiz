@@ -52,6 +52,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.atquiz.composables.FullMap
 import com.example.atquiz.composables.MultipleChoiceQuiz
 import com.example.atquiz.composables.Statistics
+import com.example.atquiz.composables.sampleStatUnitList
 import com.example.atquiz.ui.theme.ATQuizTheme
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
@@ -141,11 +142,12 @@ fun CardQuiz() {
 @Composable
 fun AppNavigation(navController : NavHostController) {
 
+    val statisticList = sampleStatUnitList
 
     Column {
         NavHost(navController, startDestination = "karte"){
             composable("stat") {
-                Statistics()
+                Statistics(statisticList)
             }
 
             composable("karte"){
