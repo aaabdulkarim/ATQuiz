@@ -7,6 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -49,6 +53,8 @@ import com.example.atquiz.composables.FullMap
 import com.example.atquiz.composables.MultipleChoiceQuiz
 import com.example.atquiz.composables.Statistics
 import com.example.atquiz.ui.theme.ATQuizTheme
+import com.example.atquiz.ui.theme.primary
+import com.example.atquiz.ui.theme.secondary
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +69,9 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         AppNavigationBar(navController)
                     },
+                    topBar = {
+                        AppTopBarLogo()
+                    }
 
                 ) {innerPadding ->
                     Surface(
@@ -81,15 +90,39 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppTopBarLogo(){
+    TopAppBar(
+        title = {
+            Row {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_map),
+                    contentDescription = "Local Icon"
+                )
+                Text(text = "AT Quiz")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = secondary
+        )
+    )
+
+
+}
 
 
 @Composable
 fun CardQuiz() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
-            modifier = Modifier.fillMaxHeight(fraction=0.8f)
+            modifier = Modifier
+                .fillMaxHeight(fraction = 0.8f)
                 .padding(10.dp)
-                .border(border = BorderStroke(2.dp, MaterialTheme.colorScheme.primaryContainer), shape= RoundedCornerShape(15.dp))
+                .border(
+                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.primaryContainer),
+                    shape = RoundedCornerShape(15.dp)
+                )
         ) {
             FullMap()
         }
