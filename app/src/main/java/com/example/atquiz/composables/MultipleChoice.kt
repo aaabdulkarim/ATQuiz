@@ -141,6 +141,7 @@ fun QuestionDetail(
             }
         }
 
+        // Für Customisation: https://developer.android.com/develop/ui/compose/animation/composables-modifiers?hl=de#animatedvisibility
         AnimatedVisibility(answerVisible) {
             Column(
                 modifier = Modifier.fillMaxSize()
