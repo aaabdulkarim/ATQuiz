@@ -1,11 +1,8 @@
 package com.example.atquiz.composables
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,7 +23,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +37,7 @@ import com.example.atquiz.ui.theme.secondary
 import com.example.atquiz.ui.theme.text
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuestionFilter(
@@ -50,7 +47,6 @@ fun QuestionFilter(
         mutableStateOf("")
     }
 
-    // Extract distinct tags from the question list
     val tagList: List<String> = questionList.map { it.tag }.distinct()
 
     val filteredQuestions = if (selectedTag.isNotEmpty()) {
@@ -63,7 +59,7 @@ fun QuestionFilter(
         // Tags
         LazyRow(
             modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp) // Adds spacing between chips
         ) {
             itemsIndexed(tagList) { _, chipData ->
                 InputChip(
@@ -76,8 +72,17 @@ fun QuestionFilter(
                         }
                     },
                     label = { Text(text = chipData) },
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                    modifier = Modifier.padding(horizontal = 4.dp) // Adds spacing within each chip
                 )
+            }
+        }
+
+        // Frageliste mit Antworten
+        LazyColumn(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            itemsIndexed(filteredQuestions) { _, questionObject ->
+                QuestionDetail(questionObject)
             }
         }
     }
@@ -86,16 +91,21 @@ fun QuestionFilter(
 
 
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun QuestionDetail(
     questionObject: QuestionObject,
-) {
+){
     val answers = questionObject.answerList
     val context = LocalContext.current
+    var answerVisible by remember {
+        mutableStateOf(false)
+    }
+
 
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .padding(2.dp)
 
     ) {
@@ -108,7 +118,10 @@ fun QuestionDetail(
             colors = CardDefaults.cardColors(
                 containerColor = secondary,
                 contentColor = text
-            )
+            ),
+            onClick = {
+                answerVisible = !answerVisible
+            }
         ) {
             Row(
                 modifier = Modifier
@@ -125,25 +138,33 @@ fun QuestionDetail(
             }
         }
 
-        // Antwortmöglichkeiten
-        answers.forEach { answer ->
-            Button(
-                onClick = {
-
-                    val toastString =
-                        if (questionObject.checkAnswer(answer)) "Richtig" else "Falsch"
-                    Toast.makeText(context, toastString, Toast.LENGTH_SHORT).show()
-                },
-
-                colors = ButtonDefaults.buttonColors(
-                    contentColor = text,
-                    containerColor = primary
-                ),
-                shape = RoundedCornerShape(20),
-                modifier = Modifier.fillMaxWidth()
+        AnimatedVisibility(answerVisible) {
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                Text(answer)
+
+                // Antwortmöglichkeiten
+                answers.forEach { answer ->
+                    Button(
+                        onClick = {
+
+                            val toastString =
+                                if (questionObject.checkAnswer(answer)) "Richtig!" else "Falsch"
+                            Toast.makeText(context, toastString, Toast.LENGTH_SHORT).show()
+                        },
+
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = text,
+                            containerColor = primary
+                        ),
+                        shape = RoundedCornerShape(20),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(answer)
+                    }
+                }
             }
+
         }
     }
 
@@ -152,55 +173,21 @@ fun QuestionDetail(
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MultipleChoiceQuiz() {
+fun MultipleChoiceQuiz(){
+    // Possible API: https://opentdb.com/api_config.php
     // Possible Dataset: https://github.com/uberspot/OpenTriviaQA/
     val questionList = sampleQuestions;
-    var currentQuestionIndex by remember {
-        mutableStateOf(0)
-    }
-    var questionObject by remember { mutableStateOf(questionList[currentQuestionIndex]) }
+    var questionObject by remember{ mutableStateOf(questionList[0]) }
+    
+    QuestionFilter(questionList = questionList)
 
-    Column {
-        QuestionFilter(questionList)
-
-        QuestionDetail(
-            questionObject = questionObject
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Button(onClick = {
-                if (currentQuestionIndex > 0) {
-                    currentQuestionIndex--
-                    questionObject = questionList[currentQuestionIndex]
-                }
-            }) {
-                Text("Back")
-            }
-
-            Button(onClick = {
-                if (currentQuestionIndex < questionList.size - 1) {
-                    currentQuestionIndex++
-                    questionObject = questionList[currentQuestionIndex]
-                }
-            }) {
-                Text("Next")
-            }
-        }
-    }
 }
 
 
-data class QuestionObject(
-    val question: String,
-    val answerList: List<String>,
-    val correctAnswerIndex: Int,
-    val tag: String
-) {
+class QuestionObject(val question : String, val answerList : List<String>, val correctAnswerIndex : Int, val tag : String, var answered : Boolean){
 
-    fun checkAnswer(userAnswer: String): Boolean {
+    fun checkAnswer(userAnswer : String): Boolean {
+        answered = true
         return userAnswer == answerList[correctAnswerIndex];
     }
 }
@@ -211,61 +198,79 @@ val sampleQuestions = listOf(
         question = "What is the capital of France?",
         answerList = listOf("Berlin", "Madrid", "Paris", "Rome"),
         correctAnswerIndex = 2,
-        tag = "Geography"
+        tag = "Geography",
+        answered = false
+
     ),
     QuestionObject(
         question = "Which planet is known as the Red Planet?",
         answerList = listOf("Earth", "Mars", "Jupiter", "Venus"),
         correctAnswerIndex = 1,
-        tag = "Science"
+        tag = "Astronomy",
+        answered = false
+
     ),
     QuestionObject(
         question = "What is the largest mammal?",
         answerList = listOf("Elephant", "Blue Whale", "Giraffe", "Hippopotamus"),
         correctAnswerIndex = 1,
-        tag = "Biology"
+        tag = "Biology",
+        answered = false
+
     ),
     QuestionObject(
         question = "How many continents are there on Earth?",
         answerList = listOf("Five", "Six", "Seven", "Eight"),
         correctAnswerIndex = 2,
-        tag = "Geography"
+        tag = "Geography",
+        answered = false
+
     ),
     QuestionObject(
         question = "What is the chemical symbol for water?",
         answerList = listOf("H2O", "O2", "CO2", "NaCl"),
         correctAnswerIndex = 0,
-        tag = "Chemistry"
+        tag = "Chemistry",
+        answered = false
+
     ),
     QuestionObject(
         question = "Who wrote 'Romeo and Juliet'?",
         answerList = listOf("Charles Dickens", "Mark Twain", "William Shakespeare", "Jane Austen"),
         correctAnswerIndex = 2,
-        tag = "Literature"
+        tag = "Literature",
+        answered = false
+
     ),
     QuestionObject(
         question = "Which language is primarily spoken in Brazil?",
         answerList = listOf("Spanish", "Portuguese", "French", "Italian"),
         correctAnswerIndex = 1,
-        tag = "Language"
+        tag = "Language",
+        answered = false
+
     ),
     QuestionObject(
         question = "What is 9 multiplied by 7?",
         answerList = listOf("56", "63", "72", "81"),
         correctAnswerIndex = 1,
-        tag = "Mathematics"
+        tag = "Mathematics",
+        answered = false
+
     ),
     QuestionObject(
         question = "Which gas do plants absorb from the atmosphere?",
         answerList = listOf("Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"),
         correctAnswerIndex = 2,
-        tag = "Biology"
+        tag = "Biology",
+        answered = false
     ),
     QuestionObject(
         question = "In which year did the Titanic sink?",
         answerList = listOf("1905", "1912", "1918", "1923"),
         correctAnswerIndex = 1,
-        tag = "History"
+        tag = "History",
+        answered = false
+
     )
 )
-
