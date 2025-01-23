@@ -1,8 +1,11 @@
 package com.example.atquiz.composables
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
 import com.example.atquiz.ui.theme.text
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +63,7 @@ fun QuestionFilter(
         // Tags
         LazyRow(
             modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp) // Adds spacing between chips
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             itemsIndexed(tagList) { _, chipData ->
                 InputChip(
@@ -73,42 +76,26 @@ fun QuestionFilter(
                         }
                     },
                     label = { Text(text = chipData) },
-                    modifier = Modifier.padding(horizontal = 4.dp) // Adds spacing within each chip
+                    modifier = Modifier.padding(horizontal = 4.dp)
                 )
             }
         }
-
-        // Frageliste mit Antworten
-        LazyColumn(
-            modifier = Modifier.padding(8.dp)
-        ) {
-            itemsIndexed(filteredQuestions) { _, questionObject ->
-                QuestionDetail(questionObject)
-            }
-        }
     }
-
-
 }
 
 
 
 
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun QuestionDetail(
     questionObject: QuestionObject,
-){
+) {
     val answers = questionObject.answerList
     val context = LocalContext.current
-    var answerVisible by remember {
-        mutableStateOf(false)
-    }
-
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(2.dp)
 
     ) {
@@ -121,10 +108,7 @@ fun QuestionDetail(
             colors = CardDefaults.cardColors(
                 containerColor = secondary,
                 contentColor = text
-            ),
-            onClick = {
-                answerVisible = !answerVisible
-            }
+            )
         ) {
             Row(
                 modifier = Modifier
@@ -141,34 +125,25 @@ fun QuestionDetail(
             }
         }
 
-        // Für Customisation: https://developer.android.com/develop/ui/compose/animation/composables-modifiers?hl=de#animatedvisibility
-        AnimatedVisibility(answerVisible) {
-            Column(
-                modifier = Modifier.fillMaxSize()
+        // Antwortmöglichkeiten
+        answers.forEach { answer ->
+            Button(
+                onClick = {
+
+                    val toastString =
+                        if (questionObject.checkAnswer(answer)) "Richtig" else "Falsch"
+                    Toast.makeText(context, toastString, Toast.LENGTH_SHORT).show()
+                },
+
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = text,
+                    containerColor = primary
+                ),
+                shape = RoundedCornerShape(20),
+                modifier = Modifier.fillMaxWidth()
             ) {
-
-                // Antwortmöglichkeiten
-                answers.forEach { answer ->
-                    Button(
-                        onClick = {
-
-                            val toastString =
-                                if (questionObject.checkAnswer(answer)) "Richtig!" else "Falsch"
-                            Toast.makeText(context, toastString, Toast.LENGTH_SHORT).show()
-                        },
-
-                        colors = ButtonDefaults.buttonColors(
-                            contentColor = text,
-                            containerColor = primary
-                        ),
-                        shape = RoundedCornerShape(20),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(answer)
-                    }
-                }
+                Text(answer)
             }
-
         }
     }
 
@@ -177,22 +152,55 @@ fun QuestionDetail(
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MultipleChoiceQuiz(){
-    // Possible API: https://opentdb.com/api_config.php
+fun MultipleChoiceQuiz() {
     // Possible Dataset: https://github.com/uberspot/OpenTriviaQA/
     val questionList = sampleQuestions;
-    var questionObject by remember{ mutableStateOf(questionList[0]) }
-    
-    QuestionFilter(questionList = questionList)
+    var currentQuestionIndex by remember {
+        mutableStateOf(0)
+    }
+    var questionObject by remember { mutableStateOf(questionList[currentQuestionIndex]) }
 
+    Column {
+        QuestionFilter(questionList)
 
+        QuestionDetail(
+            questionObject = questionObject
+        )
 
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(onClick = {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--
+                    questionObject = questionList[currentQuestionIndex]
+                }
+            }) {
+                Text("Back")
+            }
+
+            Button(onClick = {
+                if (currentQuestionIndex < questionList.size - 1) {
+                    currentQuestionIndex++
+                    questionObject = questionList[currentQuestionIndex]
+                }
+            }) {
+                Text("Next")
+            }
+        }
+    }
 }
 
 
-data class QuestionObject(val question : String, val answerList : List<String>, val correctAnswerIndex : Int, val tag : String){
+data class QuestionObject(
+    val question: String,
+    val answerList: List<String>,
+    val correctAnswerIndex: Int,
+    val tag: String
+) {
 
-    fun checkAnswer(userAnswer : String): Boolean {
+    fun checkAnswer(userAnswer: String): Boolean {
         return userAnswer == answerList[correctAnswerIndex];
     }
 }
@@ -209,7 +217,7 @@ val sampleQuestions = listOf(
         question = "Which planet is known as the Red Planet?",
         answerList = listOf("Earth", "Mars", "Jupiter", "Venus"),
         correctAnswerIndex = 1,
-        tag = "Astronomy"
+        tag = "Science"
     ),
     QuestionObject(
         question = "What is the largest mammal?",
@@ -260,3 +268,4 @@ val sampleQuestions = listOf(
         tag = "History"
     )
 )
+
