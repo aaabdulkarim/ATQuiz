@@ -13,14 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ZoomIn
-import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,22 +28,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.atquiz.R
+import com.example.atquiz.models.AUSTRIA_PARTS
+import com.example.atquiz.models.MapShape
 
 const val MAX_ZOOM = 5f
 
 @Composable
-fun AustriaMap(path: String, name: String) {
+fun PartButton(path: String, name: String, onclick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .clip(StateShape(path))
+            .clip(MapShape(path))
     ) {
         Button(
-            onClick = { Log.d(name, name) },
+            onClick = {
+                Log.d(name, name)
+                onclick()
+            },
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier.fillMaxSize()
         ) {}
@@ -63,7 +59,7 @@ fun AustriaMap(path: String, name: String) {
 @Composable
 fun FullMap() {
     var scale by remember {
-        mutableStateOf(1f)
+        mutableFloatStateOf(1f)
     }
 
     var offset by remember {
@@ -102,15 +98,13 @@ fun FullMap() {
             contentAlignment = Alignment.Center
         ) {
             Box(modifier = Modifier.align(Alignment.Center)) {
-                AustriaMap(stringResource(R.string.lower_austria), "Lower Austria")
-                AustriaMap(stringResource(R.string.vienna), "Vienna")
-                AustriaMap(stringResource(R.string.upper_austria), "Upper Austria")
-                AustriaMap(stringResource(R.string.burgenland), "Burgenland")
-                AustriaMap(stringResource(R.string.carinthia), "Carinthia")
-                AustriaMap(stringResource(R.string.styria), "Styria")
-                AustriaMap(stringResource(R.string.tyrol), "Tyrol")
-                AustriaMap(stringResource(R.string.salzburg), "Salzburg")
-                AustriaMap(stringResource(R.string.vorarlberg), "Vorarlberg")
+                for(part in AUSTRIA_PARTS) {
+                    PartButton(path = part.svgPath, name = part.name,
+                        onclick = {
+                            Log.d("AustriaMap", "Clicked on ${part.name}")
+                        }
+                    )
+                }
             }
         }
         Column(modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp)) {

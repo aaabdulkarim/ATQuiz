@@ -53,6 +53,7 @@ import com.example.atquiz.composables.FullMap
 import com.example.atquiz.composables.MultipleChoiceQuiz
 import com.example.atquiz.composables.Statistics
 import com.example.atquiz.composables.sampleStatUnitList
+import com.example.atquiz.screens.CardQuiz
 import com.example.atquiz.ui.theme.ATQuizTheme
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
@@ -111,33 +112,6 @@ fun AppTopBarLogo(){
 
 
 }
-
-
-@Composable
-fun CardQuiz() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight(fraction = 0.8f)
-                .padding(10.dp)
-                .border(
-                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.primaryContainer),
-                    shape = RoundedCornerShape(15.dp)
-                )
-        ) {
-            FullMap()
-        }
-        Text(text = "Klicke auf Öberösterreich", fontSize = 20.sp)
-        Button(onClick = {
-
-        }) {
-            Text("ALARM")
-        }
-    }
-
-}
-
-
 
 @Composable
 fun AppNavigation(navController : NavHostController) {
