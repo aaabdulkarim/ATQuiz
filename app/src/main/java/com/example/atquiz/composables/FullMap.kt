@@ -30,12 +30,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.example.atquiz.models.AUSTRIA_PARTS
+import com.example.atquiz.models.MapPart
 import com.example.atquiz.models.MapShape
 
 const val MAX_ZOOM = 5f
 
 @Composable
-fun PartButton(path: String, name: String, onclick: () -> Unit) {
+fun PartButton(path: String, isDisabled: Boolean ,name: String, onclick: (name: String) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -43,9 +44,10 @@ fun PartButton(path: String, name: String, onclick: () -> Unit) {
             .clip(MapShape(path))
     ) {
         Button(
+            enabled = !isDisabled,
             onClick = {
                 Log.d(name, name)
-                onclick()
+                onclick(name)
             },
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier.fillMaxSize()
@@ -57,7 +59,7 @@ fun PartButton(path: String, name: String, onclick: () -> Unit) {
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
-fun FullMap() {
+fun FullMap(partList: List<MapPart>, buttonsDisabled: Boolean ,onclick: (name: String) -> Unit) {
     var scale by remember {
         mutableFloatStateOf(1f)
     }
@@ -65,8 +67,6 @@ fun FullMap() {
     var offset by remember {
         mutableStateOf(Offset.Zero)
     }
-
-    var sliderPosition by remember { mutableFloatStateOf(scale/5) }
 
     BoxWithConstraints(
         modifier = Modifier.fillMaxWidth().fillMaxHeight().clipToBounds()
@@ -98,17 +98,16 @@ fun FullMap() {
             contentAlignment = Alignment.Center
         ) {
             Box(modifier = Modifier.align(Alignment.Center)) {
-                for(part in AUSTRIA_PARTS) {
-                    PartButton(path = part.svgPath, name = part.name,
-                        onclick = {
-                            Log.d("AustriaMap", "Clicked on ${part.name}")
+                for(part in partList) {
+                    PartButton(path = part.svgPath, isDisabled = buttonsDisabled, name = part.name,
+                        onclick = { name ->
+                            onclick(name)
                         }
                     )
                 }
             }
         }
         Column(modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp)) {
-            Text("${(scale)}")
             Slider(
                 value = (scale-1)/4,
                 onValueChange = { scale = it*4+1 }

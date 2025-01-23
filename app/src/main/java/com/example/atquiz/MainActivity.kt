@@ -53,6 +53,7 @@ import com.example.atquiz.composables.FullMap
 import com.example.atquiz.composables.MultipleChoiceQuiz
 import com.example.atquiz.composables.Statistics
 import com.example.atquiz.composables.sampleStatUnitList
+import com.example.atquiz.models.AUSTRIA_PARTS
 import com.example.atquiz.screens.CardQuiz
 import com.example.atquiz.ui.theme.ATQuizTheme
 import com.example.atquiz.ui.theme.primary
@@ -125,7 +126,7 @@ fun AppNavigation(navController : NavHostController) {
             }
 
             composable("karte"){
-                CardQuiz()
+                CardQuiz(AUSTRIA_PARTS)
             }
 
             composable("quiz") {
