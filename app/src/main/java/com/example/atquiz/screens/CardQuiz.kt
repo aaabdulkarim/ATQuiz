@@ -35,7 +35,7 @@ fun CardQuiz(partList: List<MapPart>) {
 
     val optionsLength = partList.size
 
-    var correctCount by remember {
+    var tryCount by remember {
         mutableIntStateOf(0)
     }
 
@@ -63,9 +63,10 @@ fun CardQuiz(partList: List<MapPart>) {
                 )
         ) {
             FullMap(partList = partList, buttonsDisabled = mapIsDisabled, onclick = { name ->
+                tryCount++
                 if(name == selectedOption) {
                     Log.e("ALARM", "ALARM")
-                    correctCount++
+
                     isCorrect = true
                     mapIsDisabled = true
                     options = options.filter { it != name }
@@ -81,7 +82,7 @@ fun CardQuiz(partList: List<MapPart>) {
                 Text(text="Click on $selectedOption", fontSize = 20.sp)
             }
             if(options.isEmpty()) {
-                Text(text = "You got $correctCount/$optionsLength  correct answers!")
+                Text(text = "It took you $tryCount tries to complete the quiz!", fontSize = 20.sp)
             }
             Button(enabled = isCorrect && options.isNotEmpty(), onClick = {
                 if(options.isNotEmpty()) {
