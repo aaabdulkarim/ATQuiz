@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.atquiz.ui.theme.primary
@@ -120,6 +121,9 @@ fun QuestionDetail(
         mutableStateOf(false)
     }
 
+    var containerColor by remember {
+        mutableStateOf(secondary)
+    }
 
     Column(
         modifier = Modifier
@@ -134,7 +138,7 @@ fun QuestionDetail(
                 .padding(8.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = secondary,
+                containerColor = containerColor,
                 contentColor = text
             ),
             onClick = {
@@ -166,9 +170,12 @@ fun QuestionDetail(
                     Button(
                         onClick = {
 
-                            val toastString =
-                                if (questionObject.checkAnswer(answer)) "Richtig!" else "Falsch"
-                            Toast.makeText(context, toastString, Toast.LENGTH_SHORT).show()
+                            if (questionObject.checkAnswer(answer)) {
+                                containerColor = Color.Green
+                            } else {
+                                containerColor = Color.Red
+                            }
+
                             answerVisible = false
                             onAnswered()
                         },
