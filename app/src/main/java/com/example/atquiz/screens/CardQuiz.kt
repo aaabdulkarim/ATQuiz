@@ -22,12 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.atquiz.composables.FullMap
 import com.example.atquiz.models.MapPart
 import kotlin.random.Random
 
 @Composable
-fun CardQuiz(partList: List<MapPart>) {
+fun CardQuiz(partList: List<MapPart>, navController: NavController) {
 
     var options by remember {
         mutableStateOf(partList.map { it.name })
@@ -88,12 +89,18 @@ fun CardQuiz(partList: List<MapPart>) {
                 if(options.isNotEmpty()) {
                     selectedOption = options[Random.nextInt(options.size)]
                     mapIsDisabled = false
+                } else {
+                    navController.navigate("mapSelection")
                 }
-                Log.e("LENGTH", options.size.toString())
                 isCorrect = false
 
+
             }) {
-                Text(text = "Next")
+                if(options.isEmpty()) {
+                    Text(text = "Back to Map Selection")
+                } else {
+                    Text(text = "Next")
+                }
             }
         }
 

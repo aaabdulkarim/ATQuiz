@@ -55,6 +55,7 @@ import com.example.atquiz.composables.Statistics
 import com.example.atquiz.composables.sampleStatUnitList
 import com.example.atquiz.models.AUSTRIA_PARTS
 import com.example.atquiz.screens.CardQuiz
+import com.example.atquiz.screens.MapSelection
 import com.example.atquiz.ui.theme.ATQuizTheme
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
@@ -120,13 +121,17 @@ fun AppNavigation(navController : NavHostController) {
     val statisticList = sampleStatUnitList
 
     Column {
-        NavHost(navController, startDestination = "karte"){
+        NavHost(navController, startDestination = "mapSelection"){
             composable("stat") {
                 Statistics(statisticList)
             }
 
-            composable("karte"){
-                CardQuiz(AUSTRIA_PARTS)
+            composable("mapSelection") {
+                MapSelection(navController)
+            }
+
+            composable("austriaMap") {
+                CardQuiz(AUSTRIA_PARTS, navController)
             }
 
             composable("quiz") {
@@ -143,7 +148,7 @@ fun AppNavigation(navController : NavHostController) {
 @Composable
 fun AppNavigationBar(navController : NavController) {
     var selectedItem by remember { mutableIntStateOf(0) }
-    val items = listOf("Karte", "Quiz", "Stat")
+    val items = listOf("mapSelection", "Quiz", "Stat")
     // https://www.reshot.com/free-svg-icons/item/speech-bubble-question-CHEP4RX57W/
     // https://www.reshot.com/free-svg-icons/item/map-W4DUJ39HXV/
     // https://www.flaticon.com/free-icon/diagram_9637699?term=stats&page=1&position=67&origin=tag&related_id=9637699
