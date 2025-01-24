@@ -24,18 +24,20 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
 import com.example.atquiz.ui.theme.text
-
+import kotlinx.coroutines.delay
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +50,8 @@ fun QuestionFilter(
     }
 
     val tagList: List<String> = questionList.map { it.tag }.distinct()
+
+    var currentQuestionIndex by remember { mutableStateOf(0) }
 
     val filteredQuestions = if (selectedTag.isNotEmpty()) {
         questionList.filter { it.tag == selectedTag }
@@ -81,8 +85,21 @@ fun QuestionFilter(
         LazyColumn(
             modifier = Modifier.padding(8.dp)
         ) {
-            itemsIndexed(filteredQuestions) { _, questionObject ->
-                QuestionDetail(questionObject)
+            itemsIndexed(filteredQuestions) { index, questionObject ->
+                AnimatedVisibility( index <= currentQuestionIndex) {
+                    QuestionDetail(
+                        questionObject = questionObject,
+                        onAnswered = {
+                            if (questionObject.answered) {
+                                // Move to the next question only if it's the current question
+                                if (index == currentQuestionIndex && currentQuestionIndex < questionList.size - 1) {
+                                    currentQuestionIndex++
+                                }
+                            }
+                        },
+                        isCurrentQuestion = index == currentQuestionIndex,
+                    )
+                }
             }
         }
     }
@@ -95,6 +112,8 @@ fun QuestionFilter(
 @Composable
 fun QuestionDetail(
     questionObject: QuestionObject,
+    isCurrentQuestion: Boolean,
+    onAnswered: () -> Unit
 ){
     val answers = questionObject.answerList
     val context = LocalContext.current
@@ -102,6 +121,9 @@ fun QuestionDetail(
         mutableStateOf(false)
     }
 
+    var containerColor by remember {
+        mutableStateOf(secondary)
+    }
 
     Column(
         modifier = Modifier
@@ -116,7 +138,7 @@ fun QuestionDetail(
                 .padding(8.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = secondary,
+                containerColor = containerColor,
                 contentColor = text
             ),
             onClick = {
@@ -148,14 +170,19 @@ fun QuestionDetail(
                     Button(
                         onClick = {
 
-                            val toastString =
-                                if (questionObject.checkAnswer(answer)) "Richtig!" else "Falsch"
-                            Toast.makeText(context, toastString, Toast.LENGTH_SHORT).show()
-                        },
+                            if (questionObject.checkAnswer(answer)) {
+                                containerColor = Color.Green
+                            } else {
+                                containerColor = Color.Red
+                            }
 
+                            answerVisible = false
+                            onAnswered()
+                        },
+                        enabled = isCurrentQuestion && !questionObject.answered,
                         colors = ButtonDefaults.buttonColors(
                             contentColor = text,
-                            containerColor = primary
+                            containerColor = if (questionObject.answered) secondary else primary
                         ),
                         shape = RoundedCornerShape(20),
                         modifier = Modifier.fillMaxWidth()
@@ -167,7 +194,6 @@ fun QuestionDetail(
 
         }
     }
-
 }
 
 
