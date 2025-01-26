@@ -10,18 +10,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
+import com.example.atquiz.models.StatUnit
 import ir.ehsannarmani.compose_charts.ColumnChart
 import ir.ehsannarmani.compose_charts.models.BarProperties
 import ir.ehsannarmani.compose_charts.models.Bars
 
 
-// Diese Data Class sollten die Daten der Statistiken bestmöglichst halten
-//
-data class StatUnit(
-    val statLabel : String,
-    val amountQuestion : Int,
-    val amountCorrect : Int
-)
 
 
 // Chart Benutzen: https://github.com/ehsannarmani/ComposeCharts/tree/0.0.4?tab=readme-ov-file#gradle-setup

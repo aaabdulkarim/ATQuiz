@@ -1,10 +1,11 @@
 package com.example.atquiz.composables
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,8 +25,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,27 +36,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.atquiz.models.AUSTRIA_PARTS
+import com.example.atquiz.models.QuestionObject
+import com.example.atquiz.screens.CardQuiz
+import com.example.atquiz.screens.MapSelection
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
 import com.example.atquiz.ui.theme.text
-import kotlinx.coroutines.delay
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun QuestionFilter(
+fun QuizBuilder(
     questionList: List<QuestionObject>,
+    onUpdateQuestionList: (newList : List<QuestionObject>) -> Unit,
+    navController : NavController
 ) {
-    var selectedTag by remember {
-        mutableStateOf("")
-    }
 
     val tagList: List<String> = questionList.map { it.tag }.distinct()
+    val selectedTags = remember { mutableStateListOf<String>() }
 
-    var currentQuestionIndex by remember { mutableStateOf(0) }
 
-    val filteredQuestions = if (selectedTag.isNotEmpty()) {
-        questionList.filter { it.tag == selectedTag }
+    val filteredQuestions = if (selectedTags.isNotEmpty()) {
+        questionList.filter { it.tag in selectedTags }
     } else {
         questionList
     }
@@ -63,43 +72,80 @@ fun QuestionFilter(
         // Tags
         LazyRow(
             modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp) // Adds spacing between chips
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             itemsIndexed(tagList) { _, chipData ->
                 InputChip(
-                    selected = selectedTag == chipData,
+                    selected = chipData in selectedTags,
                     onClick = {
-                        if (selectedTag == chipData) {
-                            selectedTag = ""
+                        if (chipData in selectedTags) {
+                            selectedTags.remove(chipData)
                         } else {
-                            selectedTag = chipData
+                            selectedTags.add(chipData)
                         }
+
+                        onUpdateQuestionList(filteredQuestions)
                     },
                     label = { Text(text = chipData) },
-                    modifier = Modifier.padding(horizontal = 4.dp) // Adds spacing within each chip
-                )
+                    modifier = Modifier.padding(horizontal = 4.dp)                 )
             }
         }
 
-        // Frageliste mit Antworten
-        LazyColumn(
-            modifier = Modifier.padding(8.dp)
-        ) {
-            itemsIndexed(filteredQuestions) { index, questionObject ->
-                AnimatedVisibility( index <= currentQuestionIndex) {
-                    QuestionDetail(
-                        questionObject = questionObject,
-                        onAnswered = {
-                            if (questionObject.answered) {
-                                // Move to the next question only if it's the current question
-                                if (index == currentQuestionIndex && currentQuestionIndex < questionList.size - 1) {
-                                    currentQuestionIndex++
-                                }
+        // TODO: Leanders Map Choice buttons nehmen
+        FlowRow(modifier = Modifier.fillMaxSize()) {
+            MapSelectionEntry("5", "Fragen", onClick = {
+
+                navController.navigate("questions")
+                onUpdateQuestionList(filteredQuestions.shuffled().take(5))
+
+            })
+
+
+            MapSelectionEntry("10", "Fragen", onClick = {
+                navController.navigate("questions")
+                onUpdateQuestionList(filteredQuestions.shuffled().take(10))
+
+            })
+
+            MapSelectionEntry("15", "Fragen", onClick = {
+                navController.navigate("questions")
+                onUpdateQuestionList(filteredQuestions.shuffled().take(15))
+
+            })
+
+            MapSelectionEntry("20", "Fragen", onClick = {
+                navController.navigate("questions")
+                onUpdateQuestionList(filteredQuestions.shuffled().take(20))
+
+            })
+        }
+    }
+}
+
+@Composable
+fun QuestionList(filteredQuestions : List<QuestionObject>) {
+
+    var currentQuestionIndex by remember { mutableIntStateOf(0) }
+
+
+    // Frageliste mit Antworten
+    LazyColumn(
+        modifier = Modifier.padding(8.dp)
+    ) {
+        itemsIndexed(filteredQuestions) { index, questionObject ->
+            AnimatedVisibility( index <= currentQuestionIndex) {
+                QuestionDetail(
+                    questionObject = questionObject,
+                    onAnswered = {
+                        if (index == currentQuestionIndex && questionObject.answered) {
+                            if (currentQuestionIndex < filteredQuestions.size - 1) {
+                                currentQuestionIndex++
                             }
-                        },
-                        isCurrentQuestion = index == currentQuestionIndex,
-                    )
-                }
+                        }
+
+                    },
+                    isCurrentQuestion = index == currentQuestionIndex,
+                )
             }
         }
     }
@@ -202,21 +248,37 @@ fun QuestionDetail(
 fun MultipleChoiceQuiz(){
     // Possible API: https://opentdb.com/api_config.php
     // Possible Dataset: https://github.com/uberspot/OpenTriviaQA/
-    val questionList = sampleQuestions;
-    var questionObject by remember{ mutableStateOf(questionList[0]) }
-    
-    QuestionFilter(questionList = questionList)
 
-}
+    val navController = rememberNavController()
 
+    var questionList by remember {
+        mutableStateOf(sampleQuestions)
+    };
 
-class QuestionObject(val question : String, val answerList : List<String>, val correctAnswerIndex : Int, val tag : String, var answered : Boolean){
+    NavHost(navController, startDestination = "quizbuilder"){
+        composable("quizbuilder") {
+            QuizBuilder(
+                questionList = questionList,
+                onUpdateQuestionList = {newList ->
+                    questionList = newList
+                },
+                navController = navController
+            )
+        }
 
-    fun checkAnswer(userAnswer : String): Boolean {
-        answered = true
-        return userAnswer == answerList[correctAnswerIndex];
+        composable("questions") {
+            QuestionList(questionList)
+
+        }
     }
+
+
+
+
 }
+
+
+
 
 
 val sampleQuestions = listOf(
