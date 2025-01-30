@@ -20,4 +20,10 @@ class QuestionObject(val question : String, val answerList : List<String>, val c
 
         return answeredCorrectly;
     }
+
+    fun reset() {
+        answered = false
+        answeredCorrectly = false
+        containerColor = secondary
+    }
 }

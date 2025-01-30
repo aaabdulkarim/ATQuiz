@@ -288,15 +288,11 @@ fun MultipleChoiceQuiz(){
         }
 
         composable("questions") {
-//            questionList = sampleQuestions
+            questionList.forEach({ it.reset() })
             QuestionList(questionList, navController)
 
         }
     }
-
-
-
-
 }
 
 
