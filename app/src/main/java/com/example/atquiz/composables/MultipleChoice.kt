@@ -25,6 +25,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -124,7 +125,10 @@ fun QuizBuilder(
 }
 
 @Composable
-fun QuestionList(filteredQuestions : List<QuestionObject>) {
+fun QuestionList(
+    filteredQuestions : List<QuestionObject>,
+    navController: NavController
+) {
 
     var currentQuestionIndex by remember { mutableIntStateOf(0) }
 
@@ -134,26 +138,42 @@ fun QuestionList(filteredQuestions : List<QuestionObject>) {
         listState.animateScrollToItem(currentQuestionIndex)
     }
 
+    Column {
+        // Frageliste mit Antworten
+        LazyColumn(
+            modifier = Modifier.padding(8.dp),
+            state = listState
+        ) {
+            itemsIndexed(filteredQuestions) { index, questionObject ->
+                AnimatedVisibility( index <= currentQuestionIndex) {
+                    QuestionDetail(
+                        questionObject = questionObject,
+                        onAnswered = {
+                            // Entfernen von Out of Bounds check
+    //                        if (index == currentQuestionIndex && questionObject.answered) {
+    //                            if (currentQuestionIndex < filteredQuestions.size - 1) {
+                                    currentQuestionIndex++
+    //                            }
+    //                        }
 
-    // Frageliste mit Antworten
-    LazyColumn(
-        modifier = Modifier.padding(8.dp),
-        state = listState
-    ) {
-        itemsIndexed(filteredQuestions) { index, questionObject ->
-            AnimatedVisibility( index <= currentQuestionIndex) {
-                QuestionDetail(
-                    questionObject = questionObject,
-                    onAnswered = {
-                        if (index == currentQuestionIndex && questionObject.answered) {
-                            if (currentQuestionIndex < filteredQuestions.size - 1) {
-                                currentQuestionIndex++
-                            }
-                        }
+                        },
+                        isCurrentQuestion = index == currentQuestionIndex,
+                    )
+                }
+            }
 
-                    },
-                    isCurrentQuestion = index == currentQuestionIndex,
-                )
+
+
+        }
+
+        // Zurück Button nur sichtbar, wenn die letzte Frage erreicht wurde
+        AnimatedVisibility(currentQuestionIndex == filteredQuestions.size) {
+            TextButton(
+                onClick = {
+                    navController.navigate("quizbuilder")
+                }
+            ) {
+                Text("Zurück")
             }
         }
     }
@@ -170,7 +190,6 @@ fun QuestionDetail(
     onAnswered: () -> Unit
 ){
     val answers = questionObject.answerList
-    val context = LocalContext.current
     var answerVisible by remember {
         mutableStateOf(false)
     }
@@ -240,6 +259,7 @@ fun QuestionDetail(
             }
 
         }
+
     }
 }
 
@@ -268,7 +288,8 @@ fun MultipleChoiceQuiz(){
         }
 
         composable("questions") {
-            QuestionList(questionList)
+//            questionList = sampleQuestions
+            QuestionList(questionList, navController)
 
         }
     }
