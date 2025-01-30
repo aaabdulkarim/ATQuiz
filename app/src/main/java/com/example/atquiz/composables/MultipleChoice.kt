@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -25,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -60,7 +62,6 @@ fun QuizBuilder(
 
     val tagList: List<String> = questionList.map { it.tag }.distinct()
     val selectedTags = remember { mutableStateListOf<String>() }
-
 
     val filteredQuestions = if (selectedTags.isNotEmpty()) {
         questionList.filter { it.tag in selectedTags }
@@ -127,10 +128,17 @@ fun QuestionList(filteredQuestions : List<QuestionObject>) {
 
     var currentQuestionIndex by remember { mutableIntStateOf(0) }
 
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(currentQuestionIndex) {
+        listState.animateScrollToItem(currentQuestionIndex)
+    }
+
 
     // Frageliste mit Antworten
     LazyColumn(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.padding(8.dp),
+        state = listState
     ) {
         itemsIndexed(filteredQuestions) { index, questionObject ->
             AnimatedVisibility( index <= currentQuestionIndex) {
