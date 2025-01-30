@@ -1,9 +1,23 @@
 package com.example.atquiz.models
 
+import androidx.compose.ui.graphics.Color
+import com.example.atquiz.ui.theme.secondary
+
 class QuestionObject(val question : String, val answerList : List<String>, val correctAnswerIndex : Int, val tag : String, var answered : Boolean){
+
+    var answeredCorrectly = false
+    var containerColor = secondary
 
     fun checkAnswer(userAnswer : String): Boolean {
         answered = true
-        return userAnswer == answerList[correctAnswerIndex];
+        if (userAnswer == answerList[correctAnswerIndex]) {
+            answeredCorrectly = true
+            containerColor = Color.Green
+        } else {
+            answeredCorrectly = false
+            containerColor = Color.Red
+        }
+
+        return answeredCorrectly;
     }
 }

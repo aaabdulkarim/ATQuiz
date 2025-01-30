@@ -175,9 +175,6 @@ fun QuestionDetail(
         mutableStateOf(false)
     }
 
-    var containerColor by remember {
-        mutableStateOf(secondary)
-    }
 
     Column(
         modifier = Modifier
@@ -192,7 +189,7 @@ fun QuestionDetail(
                 .padding(8.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = containerColor,
+                containerColor = questionObject.containerColor,
                 contentColor = text
             ),
             onClick = {
@@ -224,11 +221,7 @@ fun QuestionDetail(
                     Button(
                         onClick = {
 
-                            if (questionObject.checkAnswer(answer)) {
-                                containerColor = Color.Green
-                            } else {
-                                containerColor = Color.Red
-                            }
+                            questionObject.checkAnswer(answer)
 
                             answerVisible = false
                             onAnswered()
