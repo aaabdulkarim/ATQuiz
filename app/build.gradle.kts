@@ -53,6 +53,7 @@ android {
 
 dependencies {
     implementation ("com.github.ehsannarmani:ComposeCharts:0.0.4")
+    implementation("com.google.code.gson:gson:2.8.8")
 
     implementation("androidx.compose.material:material-icons-extended:1.7.6")
 

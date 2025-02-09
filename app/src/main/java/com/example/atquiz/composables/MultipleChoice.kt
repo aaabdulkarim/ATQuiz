@@ -1,5 +1,6 @@
 package com.example.atquiz.composables
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +45,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.atquiz.models.AUSTRIA_PARTS
 import com.example.atquiz.models.QuestionObject
 import com.example.atquiz.screens.CardQuiz
@@ -51,6 +53,7 @@ import com.example.atquiz.screens.MapSelection
 import com.example.atquiz.ui.theme.primary
 import com.example.atquiz.ui.theme.secondary
 import com.example.atquiz.ui.theme.text
+import com.google.gson.Gson
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -61,7 +64,7 @@ fun QuizBuilder(
     navController : NavController
 ) {
 
-    val tagList: List<String> = questionList.map { it.tag }.distinct()
+    val tagList: List<String> = sampleQuestions.map { it.tag }.distinct()
     val selectedTags = remember { mutableStateListOf<String>() }
 
     val filteredQuestions = if (selectedTags.isNotEmpty()) {
@@ -86,38 +89,41 @@ fun QuizBuilder(
                             selectedTags.add(chipData)
                         }
 
-                        onUpdateQuestionList(filteredQuestions)
+//                        onUpdateQuestionList(filteredQuestions)
                     },
                     label = { Text(text = chipData) },
                     modifier = Modifier.padding(horizontal = 4.dp)                 )
             }
         }
 
-        // TODO: Leanders Map Choice buttons nehmen
         FlowRow(modifier = Modifier.fillMaxSize()) {
             MapSelectionEntry("5", "Fragen", onClick = {
-
-                navController.navigate("questions")
-                onUpdateQuestionList(filteredQuestions.shuffled().take(5))
-
+                val selectedQuestions = filteredQuestions.shuffled().take(5)
+                val questionJson = Uri.encode(Gson().toJson(selectedQuestions))
+                navController.navigate("questions/$questionJson")
             })
 
 
+
+
             MapSelectionEntry("10", "Fragen", onClick = {
-                navController.navigate("questions")
-                onUpdateQuestionList(filteredQuestions.shuffled().take(10))
+                val selectedQuestions = filteredQuestions.shuffled().take(10)
+                val questionJson = Uri.encode(Gson().toJson(selectedQuestions))
+                navController.navigate("questions/$questionJson")
 
             })
 
             MapSelectionEntry("15", "Fragen", onClick = {
-                navController.navigate("questions")
-                onUpdateQuestionList(filteredQuestions.shuffled().take(15))
+                val selectedQuestions = filteredQuestions.shuffled().take(15)
+                val questionJson = Uri.encode(Gson().toJson(selectedQuestions))
+                navController.navigate("questions/$questionJson")
 
             })
 
             MapSelectionEntry("20", "Fragen", onClick = {
-                navController.navigate("questions")
-                onUpdateQuestionList(filteredQuestions.shuffled().take(20))
+                val selectedQuestions = filteredQuestions.shuffled().take(20)
+                val questionJson = Uri.encode(Gson().toJson(selectedQuestions))
+                navController.navigate("questions/$questionJson")
 
             })
         }
@@ -131,52 +137,57 @@ fun QuestionList(
 ) {
 
     var currentQuestionIndex by remember { mutableIntStateOf(0) }
+    var expandedAnswerIndex by remember { mutableIntStateOf(-1) } // Speichert das ausgeklappte Element
 
     val listState = rememberLazyListState()
 
-    LaunchedEffect(currentQuestionIndex) {
-        listState.animateScrollToItem(currentQuestionIndex)
+    LaunchedEffect(currentQuestionIndex, expandedAnswerIndex) {
+        val targetIndex = if (expandedAnswerIndex != -1) expandedAnswerIndex else currentQuestionIndex
+        listState.animateScrollToItem(targetIndex )
     }
 
-    Column {
-        // Frageliste mit Antworten
-        LazyColumn(
-            modifier = Modifier.padding(8.dp),
-            state = listState
-        ) {
-            itemsIndexed(filteredQuestions) { index, questionObject ->
-                AnimatedVisibility( index <= currentQuestionIndex) {
-                    QuestionDetail(
-                        questionObject = questionObject,
-                        onAnswered = {
-                            // Entfernen von Out of Bounds check
-    //                        if (index == currentQuestionIndex && questionObject.answered) {
-    //                            if (currentQuestionIndex < filteredQuestions.size - 1) {
-                                    currentQuestionIndex++
-    //                            }
-    //                        }
+    // Frageliste mit Antworten
+    LazyColumn(
+        modifier = Modifier.padding(8.dp),
+        state = listState
+    ) {
+        itemsIndexed(filteredQuestions) { index, questionObject ->
+            AnimatedVisibility( index <= currentQuestionIndex) {
+                QuestionDetail(
+                    questionObject = questionObject,
+                    onAnswered = {
+                        // Entfernen von Out of Bounds check
+//                        if (index == currentQuestionIndex && questionObject.answered) {
+//                            if (currentQuestionIndex < filteredQuestions.size - 1) {
+                                currentQuestionIndex++
+                                expandedAnswerIndex = -1
+//                            }
+//                        }
 
-                        },
-                        isCurrentQuestion = index == currentQuestionIndex,
-                    )
-                }
-            }
-
-
-
-        }
-
-        // Zurück Button nur sichtbar, wenn die letzte Frage erreicht wurde
-        AnimatedVisibility(currentQuestionIndex == filteredQuestions.size) {
-            TextButton(
-                onClick = {
-                    navController.navigate("quizbuilder")
-                }
-            ) {
-                Text("Zurück")
+                    },
+                    onAnswerExpanded = { expandedAnswerIndex = index },
+                    isCurrentQuestion = index == currentQuestionIndex,
+                )
             }
         }
+
+        // Füge den "Zurück"-Button ans Ende der Liste hinzu!
+        item {
+            AnimatedVisibility(currentQuestionIndex >= filteredQuestions.size) {
+                TextButton(
+                    onClick = {
+                        navController.navigate("quizbuilder")
+                    },
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text("Zurück")
+                }
+            }
+        }
+
     }
+
+
 }
 
 
@@ -187,7 +198,8 @@ fun QuestionList(
 fun QuestionDetail(
     questionObject: QuestionObject,
     isCurrentQuestion: Boolean,
-    onAnswered: () -> Unit
+    onAnswered: () -> Unit,
+    onAnswerExpanded: () -> Unit
 ){
     val answers = questionObject.answerList
     var answerVisible by remember {
@@ -213,6 +225,7 @@ fun QuestionDetail(
             ),
             onClick = {
                 answerVisible = !answerVisible
+                if (answerVisible) onAnswerExpanded()
             }
         ) {
             Row(
@@ -278,6 +291,8 @@ fun MultipleChoiceQuiz(){
 
     NavHost(navController, startDestination = "quizbuilder"){
         composable("quizbuilder") {
+             questionList.forEach({ it.reset() })
+
             QuizBuilder(
                 questionList = questionList,
                 onUpdateQuestionList = {newList ->
@@ -287,11 +302,18 @@ fun MultipleChoiceQuiz(){
             )
         }
 
-        composable("questions") {
-            questionList.forEach({ it.reset() })
-            QuestionList(questionList, navController)
+        composable(
+            "questions/{questionJson}",
+            arguments = listOf(navArgument("questionJson") { nullable = true })
+        ) { backStackEntry ->
+            val json = backStackEntry.arguments?.getString("questionJson") ?: "[]"
+            val gson = Gson()
+            val questionsArray: Array<QuestionObject> = gson.fromJson(json, Array<QuestionObject>::class.java)
+            val questionsList = questionsArray.toList()
 
+            QuestionList(questionsList, navController)
         }
+
     }
 }
 
